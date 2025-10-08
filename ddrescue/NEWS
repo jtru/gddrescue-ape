@@ -1,0 +1,12 @@
+Changes in version 1.29.1:
+
+The new option '--bad-sector-data=<file>' has been added. It makes ddrescue
+treat as a read error any sector containing the same data as <file>. This is
+useful when the drive, instead of signaling a read error, returns known
+garbage data (different for each drive model). If you need to use this
+option, it means that the failing drive lacks adequate integrity checking.
+(Suggested by Eliyahu Saks).
+
+It has been documented in the manual the way of extending outfile to the
+size of the partition when using option '--domain-mapfile'.
+(Reported by Bret Quigley II).
