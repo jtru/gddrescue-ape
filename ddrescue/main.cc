@@ -23,6 +23,10 @@
 
 #define _FILE_OFFSET_BITS 64
 
+#ifdef __COSMOPOLITAN__
+#define _COSMO_SOURCE // required for IsWindows() in libc/dce.h
+#endif
+
 #include <cctype>
 #include <cerrno>
 #include <cstdlib>
@@ -32,6 +36,9 @@
 #include <stdint.h>		// SIZE_MAX
 #include <unistd.h>
 #include <sys/stat.h>
+#ifdef __COSMOPOLITAN__
+#include <libc/dce.h>
+#endif
 
 #include "mapfile.h"
 #include "arg_parser.h"
@@ -928,6 +935,15 @@ int main( const int argc, const char * const argv[] )
       default: internal_error( "uncaught option." );
       }
     } // end process options
+
+  #ifdef __COSMOPOLITAN__
+  if( !getenv( "GDDRESCUE_COSMO_APE_NOQUIRKS" ) && IsWindows() )
+    {
+    if( verbosity > 0 )
+      show_error( "env:GDDRESCUE_COSMO_APE_NOQUIRKS unset: auto-enabling `--continue-on-errno=5`\n");
+    rb_opts.errno_vector.push_back( 5 );
+    }
+  #endif
 
   if( opos < 0 ) opos = ipos;
   if( hardbs < 1 ) hardbs = default_hardbs;
