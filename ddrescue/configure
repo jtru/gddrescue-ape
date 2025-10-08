@@ -6,7 +6,7 @@
 # to copy, distribute, and modify it.
 
 pkgname=ddrescue
-pkgversion=1.30
+pkgversion=1.30-cosmo-ape
 progname=ddrescue
 use_non_posix=
 srctrigger=doc/${pkgname}.texi
@@ -15,20 +15,17 @@ srctrigger=doc/${pkgname}.texi
 LC_ALL=C
 export LC_ALL
 srcdir=
-prefix=/usr/local
+prefix="${COSMOS:-/opt/cosmos}"
 exec_prefix='$(prefix)'
 bindir='$(exec_prefix)/bin'
 datarootdir='$(prefix)/share'
 infodir='$(datarootdir)/info'
 mandir='$(datarootdir)/man'
-CXX=g++
+CXX="${CXX:-cosmoc++}"
 CPPFLAGS=
 CXXFLAGS='-Wall -W -O2'
 LDFLAGS=
 MAKEINFO=makeinfo
-
-# checking whether we are using GNU C++.
-/bin/sh -c "${CXX} --version" > /dev/null 2>&1 || { CXX=c++ ; CXXFLAGS=-O2 ; }
 
 # Loop over all args
 args=
