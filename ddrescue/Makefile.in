@@ -10,6 +10,7 @@ CAN_RUN_INSTALLINFO = $(SHELL) -c "install-info --version" > /dev/null 2>&1
 ddobjs = mapbook.o fillbook.o genbook.o io.o rescuebook.o command_mode.o main.o
 objs = arg_parser.o rational.o non_posix.o loggers.o block.o mapfile.o $(ddobjs)
 logobjs = arg_parser.o block.o mapfile.o ddrescuelog.o
+cosmo_ape_objs = ddrescue.aarch64.elf ddrescue.com.dbg ddrescuelog.aarch64.elf ddrescuelog.com.dbg $(foreach o,$(objs),.aarch64/$(o)) $(foreach o,$(logobjs),.aarch64/$(o))
 
 
 .PHONY : all install install-bin install-info install-man \
@@ -158,8 +159,9 @@ dist : doc
 	lzip -v -9 $(DISTNAME).tar
 
 clean :
-	-rm -f $(progname) $(objs)
+	-rm -f $(progname) $(objs) $(cosmo_ape_objs)
 	-rm -f static_$(progname) ddrescuelog ddrescuelog.o
 
 distclean : clean
 	-rm -f Makefile config.status *.tar *.tar.lz
+	-rm -f -d .aarch64/
