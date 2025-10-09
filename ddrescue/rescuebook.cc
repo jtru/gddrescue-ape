@@ -144,7 +144,13 @@ int Rescuebook::copy_block( const Block & b, int & copied_size, int & error_size
         final_msg( iname_, "Unaligned read error. Is sector size correct?" );
         return 1;
       }
-non_fatal: ;
+non_fatal:
+      if( errno != 0 && verbosity >= 2 )
+        {
+        char msg[80] = { 0 };
+        snprintf( msg, sizeof(msg), "Non-fatal errno value \"%d\" after reading", errno );
+        show_error( msg, errno );
+        }
     }
   else { copied_size = 0; error_size = b.size(); saved_errno = EIO; }
 
