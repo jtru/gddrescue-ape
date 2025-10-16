@@ -38,6 +38,7 @@
 #include <sys/stat.h>
 #ifdef __COSMOPOLITAN__
 #include <libc/dce.h>
+#include <libc/calls/struct/utsname.h>
 #endif
 
 #include "mapfile.h"
@@ -515,6 +516,43 @@ long long adjusted_insize( const int ides, const Domain * const test_domainp,
   {
   const int odes = use_output_size ? open( oname, O_RDONLY ) : -1;
   long long insize = lseek( ( odes >= 0 ) ? odes : ides, 0, SEEK_END );
+#ifdef __COSMOPOLITAN__
+  /* macOS/Darwin returns 0 for SEEK_END on block device fds, so we use a
+   * platform-specific workaround instead. This may better be dealt with in
+   * cosmo libc proper, eventually. */
+  if( insize == 0 && !getenv( "GDDRESCUE_COSMO_APE_NOQUIRKS" ) )
+  {
+    struct utsname names;
+    uname( &names );
+    if( IsXnu() || strncmp( "Darwin", names.sysname, 6 ) )
+    {
+      if( verbosity >= 2)
+        show_error( "env:GDDRESCUE_COSMO_APE_NOQUIRKS unset: using Darwin-specific ioctl to determine input size\n");
+      uint64_t blockcnt = 0;
+      uint32_t blocksz = 0;
+      char msg[80] = { 0 };
+      if( ioctl( ides, 0x40046418, &blocksz ) == -1 ) // DKIOCGETBLOCKSIZE
+      {
+        if( verbosity >= 2 )
+        {
+          snprintf( msg, sizeof(msg), "Darwin-specific ioctl DKIOCGETBLOCKSIZE returned errno value \"%d\"", errno );
+          show_error( msg, errno );
+        }
+        blocksz = 0;
+      }
+      if( ioctl( ides, 0x40086419, &blockcnt ) == -1 ) // DKIOCGETBLOCKCOUNT
+      {
+        if( verbosity >= 2 )
+        {
+          snprintf( msg, sizeof(msg), "Darwin-specific ioctl DKIOCGETBLOCKCOUNT returned errno value \"%d\"", errno );
+          show_error( msg, errno );
+        }
+        blockcnt = 0;
+      }
+      insize = (long long) blockcnt * (uint64_t)blocksz;
+    }
+  }
+#endif
   if( odes >= 0 ) close( odes );
   if( insize >= 0 && test_domainp )
     {
